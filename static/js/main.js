@@ -333,7 +333,7 @@ function handleClearAll() {
 }
 
 /**
- * Handle download button click - downloads one by one with progress
+ * Handle download button click - parallel downloads with progress
  */
 async function handleDownload() {
     const selectedIndices = [];
@@ -356,21 +356,14 @@ async function handleDownload() {
     progressSection.classList.add('visible');
     resultsSection.classList.remove('visible');
     progressBar.style.width = '0%';
-    progressText.textContent = `準備下載 ${total} 首歌曲...`;
+    progressText.textContent = `準備下載 ${total} 首歌曲 (並行模式)...`;
 
     const results = [];
+    let completed = 0;
     let successCount = 0;
-    let failCount = 0;
 
-    // Download one by one for real-time progress
-    for (let i = 0; i < total; i++) {
-        const video = selectedVideos[i];
-        const percent = Math.round((i / total) * 100);
-
-        // Update progress bar and text
-        progressBar.style.width = `${percent}%`;
-        progressText.textContent = `下載中 (${i + 1}/${total}): ${video.title.substring(0, 40)}...`;
-
+    // Download function for single video
+    const downloadOne = async (video) => {
         try {
             const response = await fetch('/api/download', {
                 method: 'POST',
@@ -381,33 +374,39 @@ async function handleDownload() {
                     format: selectedFormat
                 })
             });
-
             const data = await response.json();
-
-            if (data.results && data.results[0]) {
-                results.push(data.results[0]);
-                if (data.results[0].success) {
-                    successCount++;
-                } else {
-                    failCount++;
-                }
-            }
+            return data.results ? data.results[0] : { title: video.title, success: false, error: 'No response', video };
         } catch (error) {
-            console.error(`Download failed for ${video.title}:`, error);
-            results.push({
-                title: video.title,
-                success: false,
-                error: error.message,
-                video: video
-            });
-            failCount++;
+            return { title: video.title, success: false, error: error.message, video };
         }
+    };
+
+    // Process in parallel chunks (3 concurrent downloads)
+    const CONCURRENT = 3;
+    for (let i = 0; i < total; i += CONCURRENT) {
+        const chunk = selectedVideos.slice(i, i + CONCURRENT);
+        const chunkPromises = chunk.map(downloadOne);
+
+        // Wait for this chunk to complete
+        const chunkResults = await Promise.all(chunkPromises);
+
+        // Update progress after each chunk
+        chunkResults.forEach(result => {
+            results.push(result);
+            completed++;
+            if (result.success) successCount++;
+        });
+
+        const percent = Math.round((completed / total) * 100);
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `下載中 ${completed}/${total} (${percent}%) - ${CONCURRENT} 並行`;
     }
 
     // Complete
     progressBar.style.width = '100%';
+    const failCount = total - successCount;
     const pathInfo = downloadPath ? ` → ${downloadPath}` : '';
-    progressText.textContent = `完成! ${successCount}/${total} 首歌曲下載成功${failCount > 0 ? ` (${failCount} 失敗)` : ''}${pathInfo}`;
+    progressText.textContent = `完成! ${successCount}/${total} 首下載成功${failCount > 0 ? ` (${failCount} 失敗)` : ''}${pathInfo}`;
 
     // Render results
     renderResults(results, downloadPath);
