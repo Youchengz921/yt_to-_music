@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to MP3 轉換器</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>🎵 YouTube to MP3</h1>
+        <p>支援播放清單、批次下載、智慧去重</p>
+    </header>
+
+    <main class="container">
+        <!-- Download Path Section -->
+        <section class="input-section">
+            <label for="download-path">📁 下載位置</label>
+            <div class="path-input-group">
+                <input type="text" id="download-path" placeholder="點擊右邊按鈕選擇資料夾..." value="" readonly>
+                <button id="browse-btn" class="btn btn-secondary" type="button">📂 瀏覽</button>
+            </div>
+            <p class="input-hint desktop-only">💡 電腦端：點擊「瀏覽」按鈕選擇電腦上的儲存位置。</p>
+            <p class="input-hint mobile-only">📱
+                手機端：檔案會先存到電腦。下載完成後，請點擊下方的「存到手機」按鈕，檔案會儲存至您手機瀏覽器的預設下載位置（通常是「檔案」或「Downloads」）。</p>
+        </section>
+
+        <!-- Format Selection Section -->
+        <section class="input-section">
+            <label>🎵 下載格式</label>
+            <div class="format-options">
+                <label class="format-option">
+                    <input type="radio" name="format" value="mp3" checked>
+                    <span class="format-label">
+                        <span class="format-icon">🎵</span>
+                        <span class="format-name">MP3</span>
+                        <span class="format-desc">音訊 (192kbps)</span>
+                    </span>
+                </label>
+                <label class="format-option">
+                    <input type="radio" name="format" value="mp4">
+                    <span class="format-label">
+                        <span class="format-icon">🎬</span>
+                        <span class="format-name">MP4</span>
+                        <span class="format-desc">影片 (720p)</span>
+                    </span>
+                </label>
+                <label class="format-option">
+                    <input type="radio" name="format" value="mp4_1080">
+                    <span class="format-label">
+                        <span class="format-icon">🎬</span>
+                        <span class="format-name">MP4 HD</span>
+                        <span class="format-desc">影片 (1080p)</span>
+                    </span>
+                </label>
+                <label class="format-option">
+                    <input type="radio" name="format" value="m4a">
+                    <span class="format-label">
+                        <span class="format-icon">🎧</span>
+                        <span class="format-name">M4A</span>
+                        <span class="format-desc">高品質音訊</span>
+                    </span>
+                </label>
+            </div>
+        </section>
+
+        <!-- URL Input Section -->
+        <section class="input-section">
+            <label for="url-input">輸入 YouTube URL（支援播放清單）</label>
+            <textarea id="url-input"
+                placeholder="貼上 YouTube 連結，每行一個&#10;&#10;例如：&#10;https://youtube.com/playlist?list=PLxxxxx&#10;https://www.youtube.com/watch?v=xxxxx"></textarea>
+            <p class="input-hint">💡 支援單一影片 URL 或播放清單 URL，系統會自動解析所有歌曲</p>
+
+            <div class="btn-group">
+                <button id="analyze-btn" class="btn btn-primary">🔍 分析 URL</button>
+            </div>
+        </section>
+
+        <!-- Video List Section -->
+        <section id="video-list-section" class="video-list-section">
+            <div class="section-header">
+                <h2>🎶 歌曲列表 (<span id="video-count">0</span> 首)</h2>
+                <div class="selection-stats" id="selection-stats">已選 0 首</div>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔍 搜尋歌曲標題...">
+            </div>
+
+            <!-- Selection Controls -->
+            <div class="selection-controls">
+                <button id="select-all-btn">✅ 全選</button>
+                <button id="deselect-all-btn">⬜ 取消全選</button>
+                <button id="invert-btn">🔄 反選</button>
+                <button id="deselect-duplicates-btn">🗑️ 取消重複</button>
+            </div>
+
+            <div id="video-list" class="video-list">
+                <!-- Videos will be rendered here -->
+            </div>
+
+            <div class="btn-group">
+                <button id="download-btn" class="btn btn-primary" disabled>⬇️ 下載選取的歌曲 (0)</button>
+            </div>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progress-section" class="progress-section">
+            <h2>⏳ 下載進度</h2>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="progress-text" class="progress-text">準備中...</p>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="results-section">
+            <div class="section-header">
+                <h2>📋 下載結果</h2>
+                <div class="clear-controls">
+                    <button id="clear-success-btn" class="btn-clear">🔄 只保留失敗</button>
+                    <button id="clear-all-btn" class="btn-clear">🗑️ 全部清除</button>
+                </div>
+            </div>
+            <div id="results-list">
+                <!-- Results will be rendered here -->
+            </div>
+            <div class="btn-group">
+                <button id="download-zip-btn" class="btn btn-success" disabled>📦 下載 ZIP 壓縮檔</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>⚠️ 請僅下載您有權使用的內容</p>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>
