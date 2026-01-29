@@ -23,7 +23,7 @@
 
 1. **建立虛擬環境**
 ```powershell
-cd c:\code\code\yt_to_music
+cd yt_to_music
 python -m venv venv
 .\venv\Scripts\activate
 ```
