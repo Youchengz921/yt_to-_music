@@ -333,7 +333,7 @@ function handleClearAll() {
 }
 
 /**
- * Handle download button click
+ * Handle download button click - downloads one by one with progress
  */
 async function handleDownload() {
     const selectedIndices = [];
@@ -347,49 +347,71 @@ async function handleDownload() {
     }
 
     const selectedVideos = selectedIndices.map(i => videos[i]);
+    const total = selectedVideos.length;
+    const downloadPath = downloadPathInput.value.trim();
+    const selectedFormat = document.querySelector('input[name="format"]:checked').value;
 
-    // Show progress
+    // Show progress section
     downloadBtn.disabled = true;
     progressSection.classList.add('visible');
     resultsSection.classList.remove('visible');
     progressBar.style.width = '0%';
-    progressText.textContent = `準備下載 ${selectedVideos.length} 首歌曲...`;
+    progressText.textContent = `準備下載 ${total} 首歌曲...`;
 
-    try {
-        // Start download
-        const downloadPath = downloadPathInput.value.trim();
-        const selectedFormat = document.querySelector('input[name="format"]:checked').value;
-        const response = await fetch('/api/download', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                videos: selectedVideos,
-                download_path: downloadPath,
-                format: selectedFormat
-            })
-        });
+    const results = [];
+    let successCount = 0;
+    let failCount = 0;
 
-        const data = await response.json();
+    // Download one by one for real-time progress
+    for (let i = 0; i < total; i++) {
+        const video = selectedVideos[i];
+        const percent = Math.round((i / total) * 100);
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Download failed');
+        // Update progress bar and text
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `下載中 (${i + 1}/${total}): ${video.title.substring(0, 40)}...`;
+
+        try {
+            const response = await fetch('/api/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    videos: [video],
+                    download_path: downloadPath,
+                    format: selectedFormat
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.results && data.results[0]) {
+                results.push(data.results[0]);
+                if (data.results[0].success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            }
+        } catch (error) {
+            console.error(`Download failed for ${video.title}:`, error);
+            results.push({
+                title: video.title,
+                success: false,
+                error: error.message,
+                video: video
+            });
+            failCount++;
         }
-
-        // Update progress to 100%
-        progressBar.style.width = '100%';
-        const pathInfo = data.download_path ? ` → ${data.download_path}` : '';
-        progressText.textContent = `完成! ${data.successful_count}/${data.total_count} 首歌曲下載成功${pathInfo}`;
-
-        // Show results
-        renderResults(data.results, data.download_path);
-
-    } catch (error) {
-        alert('下載錯誤: ' + error.message);
-        console.error(error);
-        progressSection.classList.remove('visible');
-    } finally {
-        downloadBtn.disabled = false;
     }
+
+    // Complete
+    progressBar.style.width = '100%';
+    const pathInfo = downloadPath ? ` → ${downloadPath}` : '';
+    progressText.textContent = `完成! ${successCount}/${total} 首歌曲下載成功${failCount > 0 ? ` (${failCount} 失敗)` : ''}${pathInfo}`;
+
+    // Render results
+    renderResults(results, downloadPath);
+    downloadBtn.disabled = false;
 }
 
 /**

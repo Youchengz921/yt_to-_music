@@ -6,8 +6,9 @@ import re
 from fuzzywuzzy import fuzz
 
 
-# Common patterns to remove from titles
+# Common patterns to remove from titles (expanded for Chinese music)
 NOISE_PATTERNS = [
+    # English patterns
     r'\(official\s*(music\s*)?video\)',
     r'\(official\s*audio\)',
     r'\(lyric\s*video\)',
@@ -24,16 +25,48 @@ NOISE_PATTERNS = [
     r'official\s*video',
     r'official\s*audio',
     r'lyric\s*video',
-    r'lyrics?',
-    r'\|\s*.*$',  # Everything after |
-    r'【.*?】',   # Chinese brackets content
-    r'「.*?」',   # Japanese brackets content
+    r'\|.*$',  # Everything after |
     r'\d{4}\s*(mv|music\s*video)',  # Year + MV
     r'hd|4k|1080p|720p',
-    r'feat\.?\s*\w+',
-    r'ft\.?\s*\w+',
-    r'prod\.?\s*\w+',
+    r'feat\.?\s*[\w\s]+',
+    r'ft\.?\s*[\w\s]+',
+    r'prod\.?\s*[\w\s]+',
+    
+    # Chinese patterns (expanded)
+    r'【.*?】',   # Chinese square brackets
+    r'「.*?」',   # Japanese quotes
+    r'『.*?』',   # Japanese double quotes
+    r'《.*?》',   # Chinese book title marks (keep for extraction, remove version info)
+    r'动态歌词',
+    r'動態歌詞',
+    r'歌词版?',
+    r'歌詞版?',
+    r'完整版',
+    r'高清版?',
+    r'高音質',
+    r'高音质',
+    r'無損',
+    r'无损',
+    r'lyrics?',
+    r'pinyin',
+    r'拼音',
+    r'viet\s*sub',
+    r'vietsub',
+    r'中文字幕',
+    r'附詞',
+    r'附词',
+    r'純音樂',
+    r'纯音乐',
+    r'伴奏',
+    r'cover',
+    r'翻唱',
+    r'live',
+    r'現場',
+    r'现场',
+    r'演唱會',
+    r'演唱会',
 ]
+
 
 
 def normalize_title(title):
