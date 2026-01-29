@@ -66,6 +66,40 @@
             </div>
         </section>
 
+        <!-- Download Mode Selection -->
+        <section class="input-section">
+            <label>⚡ 下載模式</label>
+            <div class="format-options">
+                <label class="format-option">
+                    <input type="radio" name="download-mode" value="fast">
+                    <span class="format-label">
+                        <span class="format-icon">🚀</span>
+                        <span class="format-name">急速模式</span>
+                        <span class="format-desc">全部並行 (最快)</span>
+                    </span>
+                </label>
+                <label class="format-option">
+                    <input type="radio" name="download-mode" value="balanced" checked>
+                    <span class="format-label">
+                        <span class="format-icon">⚖️</span>
+                        <span class="format-name">平衡模式</span>
+                        <span class="format-desc">3 並行 + 進度</span>
+                    </span>
+                </label>
+                <label class="format-option">
+                    <input type="radio" name="download-mode" value="custom">
+                    <span class="format-label">
+                        <span class="format-icon">🎛️</span>
+                        <span class="format-name">自訂</span>
+                        <span class="format-desc">
+                            <input type="number" id="custom-concurrent" min="1" max="10" value="5" style="width: 40px;">
+                            並行
+                        </span>
+                    </span>
+                </label>
+            </div>
+        </section>
+
         <!-- URL Input Section -->
         <section class="input-section">
             <label for="url-input">輸入 YouTube URL（支援播放清單）</label>

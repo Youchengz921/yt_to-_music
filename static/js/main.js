@@ -333,7 +333,7 @@ function handleClearAll() {
 }
 
 /**
- * Handle download button click - parallel downloads with progress
+ * Handle download button click - supports multiple download modes
  */
 async function handleDownload() {
     const selectedIndices = [];
@@ -351,12 +351,25 @@ async function handleDownload() {
     const downloadPath = downloadPathInput.value.trim();
     const selectedFormat = document.querySelector('input[name="format"]:checked').value;
 
+    // Get download mode
+    const downloadMode = document.querySelector('input[name="download-mode"]:checked').value;
+    let concurrent = 3; // Default balanced
+
+    if (downloadMode === 'fast') {
+        concurrent = total; // All parallel
+    } else if (downloadMode === 'custom') {
+        concurrent = parseInt(document.getElementById('custom-concurrent').value) || 5;
+        concurrent = Math.min(Math.max(concurrent, 1), 10); // Clamp 1-10
+    }
+
     // Show progress section
     downloadBtn.disabled = true;
     progressSection.classList.add('visible');
     resultsSection.classList.remove('visible');
     progressBar.style.width = '0%';
-    progressText.textContent = `準備下載 ${total} 首歌曲 (並行模式)...`;
+
+    const modeLabel = downloadMode === 'fast' ? '急速模式' : (downloadMode === 'custom' ? `自訂 (${concurrent})` : '平衡模式');
+    progressText.textContent = `準備下載 ${total} 首歌曲 - ${modeLabel}...`;
 
     const results = [];
     let completed = 0;
@@ -381,10 +394,9 @@ async function handleDownload() {
         }
     };
 
-    // Process in parallel chunks (3 concurrent downloads)
-    const CONCURRENT = 3;
-    for (let i = 0; i < total; i += CONCURRENT) {
-        const chunk = selectedVideos.slice(i, i + CONCURRENT);
+    // Process in parallel chunks
+    for (let i = 0; i < total; i += concurrent) {
+        const chunk = selectedVideos.slice(i, i + concurrent);
         const chunkPromises = chunk.map(downloadOne);
 
         // Wait for this chunk to complete
@@ -399,7 +411,12 @@ async function handleDownload() {
 
         const percent = Math.round((completed / total) * 100);
         progressBar.style.width = `${percent}%`;
-        progressText.textContent = `下載中 ${completed}/${total} (${percent}%) - ${CONCURRENT} 並行`;
+
+        if (downloadMode === 'fast') {
+            progressText.textContent = `急速下載中... ${completed}/${total} (${percent}%)`;
+        } else {
+            progressText.textContent = `下載中 ${completed}/${total} (${percent}%) - ${concurrent} 並行`;
+        }
     }
 
     // Complete
