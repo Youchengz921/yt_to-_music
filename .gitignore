@@ -7,6 +7,10 @@ env/
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+
+# Test files (development only)
+test_*.py
 
 # Project local files
 ffmpeg/
@@ -16,6 +20,15 @@ downloads/
 *.m4a
 *.zip
 
+# Temporary/Downloaded folders
+mp3*/
+
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
